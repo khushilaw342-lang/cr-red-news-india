@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "CR RED NEWS INDIA OFFICIAL TV"
+version = "1.0.0"
+id = "artifacts/cr-red-news"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22658
+
+[services.development]
+run = "pnpm --filter @workspace/cr-red-news run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/cr-red-news", "run", "build" ]
+publicDir = "artifacts/cr-red-news/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22658"
+BASE_PATH = "/"

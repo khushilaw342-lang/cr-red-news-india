@@ -1,0 +1,273 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: CR RED NEWS INDIA OFFICIAL TV API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: news
+    description: News content management
+  - name: ticker
+    description: News ticker management
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /news:
+    get:
+      operationId: listNews
+      tags: [news]
+      summary: List all news items
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [live, youtube, video, photo]
+      responses:
+        "200":
+          description: List of news items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NewsItem"
+    post:
+      operationId: createNews
+      tags: [news]
+      summary: Create a news item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewsInput"
+      responses:
+        "201":
+          description: Created news item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsItem"
+
+  /news/latest:
+    get:
+      operationId: getLatestNews
+      tags: [news]
+      summary: Get latest news items (3 of each type)
+      responses:
+        "200":
+          description: Latest news by category
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LatestNews"
+
+  /news/{id}:
+    get:
+      operationId: getNewsItem
+      tags: [news]
+      summary: Get a single news item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: News item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsItem"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateNews
+      tags: [news]
+      summary: Update a news item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewsUpdate"
+      responses:
+        "200":
+          description: Updated news item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsItem"
+    delete:
+      operationId: deleteNews
+      tags: [news]
+      summary: Delete a news item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /ticker:
+    get:
+      operationId: getTicker
+      tags: [ticker]
+      summary: Get active ticker text
+      responses:
+        "200":
+          description: Ticker text
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticker"
+    put:
+      operationId: updateTicker
+      tags: [ticker]
+      summary: Update ticker text
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TickerInput"
+      responses:
+        "200":
+          description: Updated ticker
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticker"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    NewsItem:
+      type: object
+      required: [id, type, title, createdAt]
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [live, youtube, video, photo]
+        title:
+          type: string
+        script:
+          type: ["string", "null"]
+        embedUrl:
+          type: ["string", "null"]
+        mediaUrl:
+          type: ["string", "null"]
+        isLive:
+          type: boolean
+        createdAt:
+          type: string
+
+    NewsInput:
+      type: object
+      required: [type, title]
+      properties:
+        type:
+          type: string
+          enum: [live, youtube, video, photo]
+        title:
+          type: string
+          minLength: 1
+        script:
+          type: string
+        embedUrl:
+          type: string
+        mediaUrl:
+          type: string
+        isLive:
+          type: boolean
+
+    NewsUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        script:
+          type: string
+        embedUrl:
+          type: string
+        mediaUrl:
+          type: string
+        isLive:
+          type: boolean
+
+    LatestNews:
+      type: object
+      required: [live, youtube, video, photo]
+      properties:
+        live:
+          type: array
+          items:
+            $ref: "#/components/schemas/NewsItem"
+        youtube:
+          type: array
+          items:
+            $ref: "#/components/schemas/NewsItem"
+        video:
+          type: array
+          items:
+            $ref: "#/components/schemas/NewsItem"
+        photo:
+          type: array
+          items:
+            $ref: "#/components/schemas/NewsItem"
+
+    Ticker:
+      type: object
+      required: [id, text]
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+
+    TickerInput:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+          minLength: 1
